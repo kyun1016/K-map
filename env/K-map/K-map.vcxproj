@@ -127,7 +127,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="K-map.cpp" />
+    <ClCompile Include="main.cpp" />
     <ClCompile Include="KMap.cpp" />
   </ItemGroup>
   <ItemGroup>
