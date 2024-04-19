@@ -45,7 +45,7 @@ KMap& KMap::operator=(KMap& ref)
 
 	mDim = ref.mDim;
 	mMaps = ref.mMaps;
-	
+
 	return *this;
 }
 
@@ -64,12 +64,55 @@ KMap& KMap::operator=(KMap* ref)
 
 bool KMap::CheckValue(const int& value) const
 {
-	for (auto& val : mMaps)
+	for (const auto& val : mMaps)
 	{
 		if (value == val)
 			return true;
 	}
 	return false;
+}
+
+void KMap::CalckarnaughMap() const
+{
+	std::vector<int> ret;
+	std::vector<int> visited(mMaps);
+
+	for (int i = 1; i <= mDim; i++)
+	{
+		std::vector<bool> v(mDim - i, false);
+		v.insert(v.end(), i, true);
+
+		std::cout << i << std::endl;
+		do {
+			int mask = 0;
+			for (int j = 0; j < mDim; j++) {
+				if (v[j])
+					mask += (1 << j);
+			}
+			for (int j = 0; j < (1 << mDim); ++j) {
+				int temp = mask & j;
+				if (temp == mask)
+				{
+					std::cout << j << std::endl;
+				}
+			}
+
+			
+			
+
+		} while (std::next_permutation(v.begin(), v.end()));
+
+
+	}
+
+
+
+
+}
+
+void KMap::PrintDim() const
+{
+	std::cout << mDim << std::endl;
 }
 
 void KMap::PrintMap() const
@@ -88,10 +131,11 @@ void KMap::PrintMap() const
 	}
 }
 
-void KMap::PrintDim() const
+void KMap::PrintKMap() const
 {
-	std::cout << mDim << std::endl;
 }
+
+
 
 int KMap::GetDim() const
 {
@@ -100,7 +144,7 @@ int KMap::GetDim() const
 
 std::vector<int> KMap::GetMap() const
 {
-	return std::vector<int>(mMaps);
+	return mMaps;
 }
 
 void KMap::SetDim(const int& dim)

@@ -1,6 +1,9 @@
 #pragma once
 #include <vector>
 #include <iostream>
+#include <algorithm>
+#include <bitset>
+
 class KMap
 {
 public:
@@ -15,8 +18,10 @@ public:
 	KMap& operator=(KMap* ref);
 
 	bool CheckValue(const int& value) const;
-	void PrintMap() const;
+	void CalckarnaughMap() const;
 	void PrintDim() const;
+	void PrintMap() const;
+	void PrintKMap() const;
 	int GetDim() const;
 	std::vector<int> GetMap() const;
 
@@ -27,5 +32,6 @@ public:
 private:
 	int mDim;
 	std::vector<int> mMaps;
+	std::vector<int> mKMaplist;
 };
 
