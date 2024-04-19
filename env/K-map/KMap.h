@@ -9,6 +9,7 @@ public:
 	KMap(const int& dim, const std::initializer_list<int>& list);
 	KMap(const int& dim, const std::vector<int>& mMaps);
 	KMap(const KMap& ref);
+	KMap(const KMap* ref);
 	~KMap() = default;
 	KMap& operator=(KMap& ref);
 	KMap& operator=(KMap* ref);
@@ -17,9 +18,14 @@ public:
 	void PrintMap() const;
 	void PrintDim() const;
 	int GetDim() const;
+	std::vector<int> GetMap() const;
+
+	void SetDim(const int& dim);
+	void SetMap(const std::vector<int>& map);
+	void SetMap(const std::initializer_list<int>& list);
 
 private:
-	std::vector<int> mMaps;
 	int mDim;
+	std::vector<int> mMaps;
 };
 

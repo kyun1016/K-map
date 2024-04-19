@@ -30,6 +30,12 @@ KMap::KMap(const KMap& ref)
 {
 }
 
+KMap::KMap(const KMap* ref)
+	: mDim(ref->mDim)
+	, mMaps(ref->mMaps)
+{
+}
+
 KMap& KMap::operator=(KMap& ref)
 {
 	if (this == &ref)
@@ -80,4 +86,34 @@ void KMap::PrintMap() const
 		}
 		std::cout << std::endl;
 	}
+}
+
+void KMap::PrintDim() const
+{
+	std::cout << mDim << std::endl;
+}
+
+int KMap::GetDim() const
+{
+	return mDim;
+}
+
+std::vector<int> KMap::GetMap() const
+{
+	return std::vector<int>(mMaps);
+}
+
+void KMap::SetDim(const int& dim)
+{
+	mDim = dim;
+}
+
+void KMap::SetMap(const std::vector<int>& map)
+{
+	mMaps = map;
+}
+
+void KMap::SetMap(const std::initializer_list<int>& list)
+{
+	mMaps = list;
 }
