@@ -2,37 +2,55 @@
 
 KMap::KMap()
 	: mDim(0)
-	, mMaps(std::vector<int>())
+	, mMaxX(0)
+	, mMaxY(0)
+	, mSelectList(std::vector<int>())
+	, mMap(std::vector<std::vector<int>>())
+	, mKarMap(std::vector<std::vector<int>>())
 {
 }
 
 KMap::KMap(const int& dim)
 	: mDim(dim)
-	, mMaps(std::vector<int>())
+	, mSelectList(std::vector<int>())
+	, mKarMap(std::vector<std::vector<int>>())
 {
+	Init();
 }
 
 KMap::KMap(const int& dim, const std::initializer_list<int>& list)
 	: mDim(dim)
-	, mMaps(list)
+	, mSelectList(list)
+	, mKarMap(std::vector<std::vector<int>>())
 {
+	Init();
 }
 
-KMap::KMap(const int& dim, const std::vector<int>& mMaps)
+KMap::KMap(const int& dim, const std::vector<int>& list)
 	: mDim(dim)
-	, mMaps(mMaps)
+	, mSelectList(list)
+	, mKarMap(std::vector<std::vector<int>>())
 {
+	Init();
 }
 
 KMap::KMap(const KMap& ref)
 	: mDim(ref.mDim)
-	, mMaps(ref.mMaps)
+	, mMaxX(ref.mMaxX)
+	, mMaxY(ref.mMaxY)
+	, mSelectList(ref.mSelectList)
+	, mMap(ref.mMap)
+	, mKarMap(ref.mKarMap)
 {
 }
 
 KMap::KMap(const KMap* ref)
 	: mDim(ref->mDim)
-	, mMaps(ref->mMaps)
+	, mMaxX(ref->mMaxX)
+	, mMaxY(ref->mMaxY)
+	, mSelectList(ref->mSelectList)
+	, mMap(ref->mMap)
+	, mKarMap(ref->mKarMap)
 {
 }
 
@@ -44,7 +62,10 @@ KMap& KMap::operator=(KMap& ref)
 	}
 
 	mDim = ref.mDim;
-	mMaps = ref.mMaps;
+	mMaxX = ref.mMaxX;
+	mMaxY = ref.mMaxY;
+	mSelectList = ref.mSelectList;
+	Init();
 
 	return *this;
 }
@@ -57,57 +78,108 @@ KMap& KMap::operator=(KMap* ref)
 	}
 
 	mDim = ref->mDim;
-	mMaps = ref->mMaps;
+	mMaxX = ref->mMaxX;
+	mMaxY = ref->mMaxY;
+	mSelectList = ref->mSelectList;
+	Init();
 
 	return *this;
 }
 
-bool KMap::CheckValue(const int& value) const
+void KMap::Init()
 {
-	for (const auto& val : mMaps)
-	{
-		if (value == val)
-			return true;
-	}
-	return false;
+	FindXY();
+	FindSelectList();
+	FindMap();
+	FindkarnaughMap();
 }
 
-void KMap::CalckarnaughMap() const
+int KMap::GrayEncode(const int& num) const
 {
-	std::vector<int> ret;
-	std::vector<int> visited(mMaps);
+	return num ^ (num >> 1);
+}
 
-	for (int i = 1; i <= mDim; i++)
+bool KMap::CheckBox(const int& posY, const int posX, const int& lenY, const int& lenX) const
+{
+	if (mMaxY > (1 << lenY))
+		return false;
+	if (mMaxX > (1 << lenX))
+		return false;
+
+	for (int i = 0; i < (1 << lenY); ++i)
 	{
-		std::vector<bool> v(mDim - i, false);
-		v.insert(v.end(), i, true);
+		int y = posY + i;
+		y %= mMaxY;
+		for (int j = 0; j < (1 << lenX); ++j)
+		{
+			int x = posX + j;
+			x %= mMaxX;
 
-		std::cout << i << std::endl;
-		do {
-			int mask = 0;
-			for (int j = 0; j < mDim; j++) {
-				if (v[j])
-					mask += (1 << j);
-			}
-			for (int j = 0; j < (1 << mDim); ++j) {
-				int temp = mask & j;
-				if (temp == mask)
+			if (!mMap[y][x])
+				return false;
+		}
+	}
+	return true;
+}
+
+void KMap::FindXY()
+{
+	mMaxX = 1 << ((1 + mDim) / 2);
+	mMaxY = 1 << (mDim / 2);
+	mMap = std::vector<std::vector<int>>(mMaxY, std::vector<int>(mMaxX, 0));
+}
+
+void KMap::FindSelectList()
+{
+	std::sort(mSelectList.begin(), mSelectList.end());
+
+	while (!mSelectList.empty() && mSelectList.back() >= mMaxX * mMaxY) {
+		mSelectList.pop_back();
+	}
+}
+
+void KMap::FindMap()
+{
+	for (int y = 0; y < mMaxY; ++y)
+	{
+		for (int x = 0; x < mMaxX; ++x)
+		{
+			int num = x + y * mMaxX;
+			mMap[y][x] = 0;
+			for (const auto& a : mSelectList)
+			{
+				if (a == GrayEncode(num))
 				{
-					std::cout << j << std::endl;
+					mMap[y][x] = 1;
 				}
 			}
-
-			
-			
-
-		} while (std::next_permutation(v.begin(), v.end()));
-
-
+		}
 	}
+}
 
+void KMap::FindkarnaughMap()
+{
+	std::vector<std::vector<int>> checked(mMap);
+	for (int i = 0; i <= mDim; ++i)
+	{
+		for (int y = 0; y < mMaxY; ++y)
+		{
+			for (int x = 0; x < mMaxX; ++x)
+			{
 
+			}
+		}
+	}
+}
 
+void KMap::PrintX() const
+{
+	std::cout << mMaxX << std::endl;
+}
 
+void KMap::PrintY() const
+{
+	std::cout << mMaxY << std::endl;
 }
 
 void KMap::PrintDim() const
@@ -115,17 +187,22 @@ void KMap::PrintDim() const
 	std::cout << mDim << std::endl;
 }
 
+void KMap::PrintList() const
+{
+	for (const auto& a : mSelectList)
+	{
+		std::cout << a << " ";
+	}
+	std::cout << std::endl;
+}
+
 void KMap::PrintMap() const
 {
-	for (int y = 0; y < (1 << mDim / 2); ++y)
+	for (int y = 0; y < mMaxY; ++y)
 	{
-		for (int x = 0; x < (1 << ((mDim + 1) / 2)); ++x)
+		for (int x = 0; x < mMaxX; ++x)
 		{
-			int num = x + y * (1 << ((mDim + 1) / 2));
-			if (CheckValue(num))
-				std::cout << "1 ";
-			else
-				std::cout << "0 ";
+			std::cout << mMap[y][x] << " ";
 		}
 		std::cout << std::endl;
 	}
@@ -133,6 +210,7 @@ void KMap::PrintMap() const
 
 void KMap::PrintKMap() const
 {
+
 }
 
 
@@ -142,22 +220,35 @@ int KMap::GetDim() const
 	return mDim;
 }
 
-std::vector<int> KMap::GetMap() const
+std::vector<int> KMap::GetList() const
 {
-	return mMaps;
+	return mSelectList;
+}
+
+std::vector<std::vector<int>> KMap::GetMap() const
+{
+	return std::vector<std::vector<int>>();
+}
+
+std::vector<std::vector<int>> KMap::GetKarnaughMap() const
+{
+	return std::vector<std::vector<int>>();
 }
 
 void KMap::SetDim(const int& dim)
 {
 	mDim = dim;
+	Init();
 }
 
-void KMap::SetMap(const std::vector<int>& map)
+void KMap::SetList(const std::vector<int>& list)
 {
-	mMaps = map;
+	mSelectList = list;
+	Init();
 }
 
-void KMap::SetMap(const std::initializer_list<int>& list)
+void KMap::SetList(const std::initializer_list<int>& list)
 {
-	mMaps = list;
+	mSelectList = list;
+	Init();
 }
