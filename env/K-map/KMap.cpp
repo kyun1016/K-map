@@ -99,27 +99,47 @@ int KMap::GrayEncode(const int& num) const
 	return num ^ (num >> 1);
 }
 
-bool KMap::CheckBox(const int& posY, const int posX, const int& lenY, const int& lenX) const
+std::pair<bool, int> KMap::CheckBox(const std::vector<std::vector<int>>& visited, const int& posY, const int posX, const int& lenY, const int& lenX, const int& dir) const
 {
-	if (mMaxY > (1 << lenY))
-		return false;
-	if (mMaxX > (1 << lenX))
-		return false;
+	if (mMaxY < (1 << lenY))
+		return { false, 0 };
+	if (mMaxX < (1 << lenX))
+		return { false, 0 };
 
+	int ret = 0;
 	for (int i = 0; i < (1 << lenY); ++i)
 	{
-		int y = posY + i;
+		int y = posY + i * dirY[dir] + mMaxY;
 		y %= mMaxY;
 		for (int j = 0; j < (1 << lenX); ++j)
 		{
-			int x = posX + j;
+			int x = posX + j * dirX[dir] + mMaxX;
 			x %= mMaxX;
+			if (!visited[y][x])
+				ret++;
 
 			if (!mMap[y][x])
-				return false;
+				return { false, 0 };
 		}
 	}
-	return true;
+	return { true, ret };
+}
+
+void KMap::UpdateVisited(std::vector<std::vector<int>>& visited, const int& posY, const int posX, const int& lenY, const int& lenX, const int& dir) const
+{
+	if (dir > 3)
+		return;
+	for (int i = 0; i < (1 << lenY); ++i)
+	{
+		int y = posY + i * dirY[dir];
+		y %= mMaxY;
+		for (int j = 0; j < (1 << lenX); ++j)
+		{
+			int x = posX + j * dirX[dir];
+			x %= mMaxX;
+			visited[y][x] = 0;
+		}
+	}
 }
 
 void KMap::FindXY()
@@ -159,14 +179,68 @@ void KMap::FindMap()
 
 void KMap::FindkarnaughMap()
 {
-	std::vector<std::vector<int>> checked(mMap);
-	for (int i = 0; i <= mDim; ++i)
-	{
-		for (int y = 0; y < mMaxY; ++y)
-		{
-			for (int x = 0; x < mMaxX; ++x)
-			{
+	std::vector<std::vector<int>> visited(mMap);
 
+	std::queue<std::pair<int, int>> qu;
+
+	for (int y = 0; y < mMaxY; ++y)
+	{
+		for (int x = 0; x < mMaxX; ++x)
+		{
+			if (mMap[y][x])
+				qu.push({ y,x });
+		}
+	}
+
+
+	while (!qu.empty()) {
+		std::pair<int, int> pos = qu.front();
+		qu.pop();
+
+		if (visited[pos.first][pos.second] == 0)
+			continue;
+		
+		for (int i = mDim; i >= 0; --i)
+		{
+			for (int j = 0; j <= i; ++j)
+			{
+				int lenX = j;
+				int lenY = i - j;
+				std::pair<bool, int> ret0 = CheckBox(visited, pos.first, pos.second, lenY, lenX, 0);
+				std::pair<bool, int> ret1 = CheckBox(visited, pos.first, pos.second, lenY, lenX, 1);
+				std::pair<bool, int> ret2 = CheckBox(visited, pos.first, pos.second, lenY, lenX, 2);
+				std::pair<bool, int> ret3 = CheckBox(visited, pos.first, pos.second, lenY, lenX, 3);
+				//std::cout << "[" << pos.first << "," << pos.second << "]: " << i << ", " << lenY << "," << lenX << std::endl;
+				//std::cout << ret0.first << " " << ret1.first << " " << ret2.first << " " << ret3.first << " " << std::endl;
+				//std::cout << ret0.second << " " << ret1.second << " " << ret2.second << " " << ret3.second << " " << std::endl;
+				int flag = 5;
+				int maxValue = 0;
+				if (ret3.first && maxValue >= ret3.second)
+				{
+					flag = 3;
+					maxValue = ret3.second;
+				}
+				if (ret2.first && maxValue >= ret2.second)
+				{
+					flag = 2;
+					maxValue = ret2.second;
+				}
+				if (ret1.first && maxValue >= ret1.second)
+				{
+					flag = 1;
+					maxValue = ret1.second;
+				}
+				if (ret0.first && maxValue >= ret0.second)
+				{
+					flag = 0;
+					maxValue = ret0.second;
+				}
+
+				UpdateVisited(visited, pos.first, pos.second, lenY, lenX, flag);
+				if (flag != 5)
+				{
+					mKarMap.push_back({ pos.first, pos.second, lenY, lenX, flag });
+				}
 			}
 		}
 	}
@@ -210,7 +284,14 @@ void KMap::PrintMap() const
 
 void KMap::PrintKMap() const
 {
-
+	for (auto& a : mKarMap)
+	{
+		for (auto& b : a)
+		{
+			std::cout << b << " ";
+		}
+		std::cout << std::endl;
+	}
 }
 
 

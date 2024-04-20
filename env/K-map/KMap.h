@@ -3,6 +3,7 @@
 #include <iostream>
 #include <algorithm>
 #include <bitset>
+#include <queue>
 
 class KMap
 {
@@ -20,7 +21,9 @@ public:
 	void Init();
 
 	int GrayEncode(const int& num) const;
-	bool CheckBox(const int& posY, const int posX, const int& lenY, const int& lenX) const;
+	std::pair<bool, int> CheckBox(const std::vector<std::vector<int>>& visited, const int& posY, const int posX, const int& lenY, const int& lenX, const int& dir) const;
+	void UpdateVisited(std::vector<std::vector<int>>& visited, const int& posY, const int posX, const int& lenY, const int& lenX, const int& dir) const;
+	
 	void FindXY();
 	void FindSelectList();
 	void FindMap();
@@ -41,6 +44,8 @@ public:
 	void SetList(const std::initializer_list<int>& list);
 
 private:
+	const int dirX[4] = { 1, 1, -1, -1 };
+	const int dirY[4] = { 1, -1, 1, -1 };
 	int mDim;
 	int mMaxX;
 	int mMaxY;

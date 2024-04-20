@@ -16,12 +16,7 @@ int main()
     map1->PrintMap();
 
     std::cout << "Step2. Check CheckBox Logic" << std::endl;
-    std::cout << map1->CheckBox(0, 3, 0, 0) << std::endl;
-    std::cout << map1->CheckBox(0, 0, 0, 1) << std::endl;
-    std::cout << map1->CheckBox(0, 0, 0, 2) << std::endl;
-    std::cout << map1->CheckBox(1, 0, 0, 2) << std::endl;
-    std::cout << map1->CheckBox(1, 3, 0, 0) << std::endl;
-    
+    map1->PrintKMap();
 
     return 0;
 }
