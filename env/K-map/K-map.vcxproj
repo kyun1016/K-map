@@ -127,10 +127,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AppBase.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="KMap.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AppBase.h" />
     <ClInclude Include="KMap.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

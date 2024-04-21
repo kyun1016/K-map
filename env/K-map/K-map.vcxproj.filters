@@ -21,9 +21,15 @@
     <ClCompile Include="KMap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="AppBase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="KMap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AppBase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
