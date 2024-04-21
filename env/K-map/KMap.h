@@ -28,12 +28,14 @@ public:
 	void FindSelectList();
 	void FindMap();
 	void FindkarnaughMap();
+	void FindkarnaughMapGUI();
 	void PrintX() const;
 	void PrintY() const;
 	void PrintDim() const;
 	void PrintList() const;
 	void PrintMap() const;
 	void PrintKMap() const;
+	void PrintKarnaughMap() const;
 	int GetDim() const;
 	std::vector<int> GetList() const;
 	std::vector<std::vector<int>> GetMap() const;
@@ -52,5 +54,6 @@ private:
 	std::vector<int> mSelectList;
 	std::vector<std::vector<int>> mMap;
 	std::vector<std::vector<int>> mKarMap;
+	std::vector<std::vector<int>> mKarMapGUI;
 };
 

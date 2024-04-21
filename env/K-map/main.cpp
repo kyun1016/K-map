@@ -16,7 +16,7 @@ int main()
     map1->PrintMap();
 
     std::cout << "Step2. Check CheckBox Logic" << std::endl;
-    map1->PrintKMap();
+    map1->PrintKarnaughMap();
 
     return 0;
 }

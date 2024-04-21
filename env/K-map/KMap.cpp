@@ -92,6 +92,7 @@ void KMap::Init()
 	FindSelectList();
 	FindMap();
 	FindkarnaughMap();
+	FindkarnaughMapGUI();
 }
 
 int KMap::GrayEncode(const int& num) const
@@ -147,6 +148,7 @@ void KMap::FindXY()
 	mMaxX = 1 << ((1 + mDim) / 2);
 	mMaxY = 1 << (mDim / 2);
 	mMap = std::vector<std::vector<int>>(mMaxY, std::vector<int>(mMaxX, 0));
+	mKarMapGUI = std::vector<std::vector<int>>(mMaxY, std::vector<int>(mMaxX, 0));
 }
 
 void KMap::FindSelectList()
@@ -240,11 +242,33 @@ void KMap::FindkarnaughMap()
 					// std::cout << ret0.second << " " << ret1.second << " " << ret2.second << " " << ret3.second << " " << std::endl;
 					UpdateVisited(visited, pos.first, pos.second, lenY, lenX, flag);
 				}
-					
+
 				if (flag != 5 && maxValue > 0)
 				{
 					mKarMap.push_back({ pos.first, pos.second, lenY, lenX, flag });
 				}
+			}
+		}
+	}
+}
+
+void KMap::FindkarnaughMapGUI()
+{
+	for (int pos = 0; pos < mKarMap.size(); ++pos) {
+		int posY = mKarMap[pos][0];
+		int posX = mKarMap[pos][1];
+		int lenY = mKarMap[pos][2];
+		int lenX = mKarMap[pos][3];
+		int dir = mKarMap[pos][4];
+		for (int i = 0; i < (1 << lenY); ++i)
+		{
+			int y = posY + i * dirY[dir] + mMaxY;
+			y %= mMaxY;
+			for (int j = 0; j < (1 << lenX); ++j)
+			{
+				int x = posX + j * dirX[dir] + mMaxX;
+				x %= mMaxX;
+				mKarMapGUI[y][x] += pos;
 			}
 		}
 	}
@@ -293,6 +317,26 @@ void KMap::PrintKMap() const
 		for (auto& b : a)
 		{
 			std::cout << b << " ";
+		}
+		std::cout << std::endl;
+	}
+}
+
+void KMap::PrintKarnaughMap() const
+{
+	int a = mKarMap.size();
+	int size = 0;
+	while (a > 0) {
+		a /= 10;
+		++size;
+	}
+		
+	for (int y = 0; y < mMaxY; ++y)
+	{
+		for (int x = 0; x < mMaxX; ++x)
+		{
+			std::cout.width(size);
+			std::cout << mKarMapGUI[y][x] << " ";
 		}
 		std::cout << std::endl;
 	}
