@@ -91,8 +91,7 @@ void KMap::Init()
 	FindXY();
 	FindSelectList();
 	FindMap();
-	FindkarnaughMap();
-	FindkarnaughMapGUI();
+	FindKarnaughMap();
 }
 
 int KMap::GrayEncode(const int& num) const
@@ -100,47 +99,53 @@ int KMap::GrayEncode(const int& num) const
 	return num ^ (num >> 1);
 }
 
-std::pair<bool, int> KMap::CheckBox(const std::vector<std::vector<int>>& visited, const int& posY, const int posX, const int& lenY, const int& lenX, const int& dir) const
+int KMap::GrayDecode(const int& num) const
 {
-	if (mMaxY < (1 << lenY))
-		return { false, 0 };
-	if (mMaxX < (1 << lenX))
-		return { false, 0 };
-
-	int ret = 0;
-	for (int i = 0; i < (1 << lenY); ++i)
+	int ret = num;
+	for (int bit = 1 << 30; bit > 1; bit >>= 1)
 	{
-		int y = posY + i * dirY[dir] + mMaxY;
-		y %= mMaxY;
-		for (int j = 0; j < (1 << lenX); ++j)
-		{
-			int x = posX + j * dirX[dir] + mMaxX;
-			x %= mMaxX;
-			if (visited[y][x] != 0)
-				ret++;
-
-			if (!mMap[y][x])
-				return { false, 0 };
-		}
+		if (ret & bit) ret ^= bit >> 1;
 	}
-	return { true, ret };
+
+	return ret;
 }
 
-void KMap::UpdateVisited(std::vector<std::vector<int>>& visited, const int& posY, const int posX, const int& lenY, const int& lenX, const int& dir) const
+std::vector<int> KMap::FindGrayList(const std::vector<int>& node) const
 {
-	if (dir > 3)
-		return;
-	for (int i = 0; i < (1 << lenY); ++i)
+	std::vector<std::vector<int>> grayList;
+	grayList.push_back(node);
+
+
+	for (int i = 0; i < grayList.size(); ++i)
 	{
-		int y = posY + i * dirY[dir] + mMaxY;
-		y %= mMaxY;
-		for (int j = 0; j < (1 << lenX); ++j)
+		for (int j = 0; j < grayList[i].size(); ++j)
 		{
-			int x = posX + j * dirX[dir] + mMaxX;
-			x %= mMaxX;
-			visited[y][x] = 0;
+			if (grayList[i][j] == 2)
+			{
+				grayList.push_back(grayList[i]);
+				grayList[i][j] = 0;
+				grayList[grayList.size() - 1][j] = 1;
+			}
 		}
 	}
+
+	std::vector<int> ret;
+	for (const auto& numArray : grayList)
+	{
+		int gray = 0;
+		for (const auto& num : numArray)
+		{
+			gray = gray * 2 + num;
+		}
+		ret.push_back(gray);
+	}
+
+	return ret;
+}
+
+std::vector<int> KMap::FindGrayList(const std::initializer_list<int>& node) const
+{
+	return FindGrayList(std::vector<int>(node));
 }
 
 void KMap::FindXY()
@@ -179,97 +184,60 @@ void KMap::FindMap()
 	}
 }
 
-void KMap::FindkarnaughMap()
+void KMap::FindKarnaughMap()
 {
 	std::vector<std::vector<int>> visited(mMap);
-	std::queue<std::pair<int, int>> qu;
+	std::vector<int> node(mDim);
 
-	for (int y = 0; y < mMaxY; ++y)
+	for (int i = 0; i <= mDim; i++)
 	{
-		for (int x = 0; x < mMaxX; ++x)
+		std::vector<bool> v(mDim - i, false);
+		v.insert(v.end(), i, true);
+		for (int j = 0; j < (1 << i); ++j)
 		{
-			if (mMap[y][x])
-				qu.push({ y,x });
-		}
-	}
+			do {
+				int order = 0;
+				for (int k = 0; k < mDim; k++) {
+					if (v[k])
+						node[k] = (j >> order++) % 2;
+					else
+						node[k] = 2;
+				}
 
+				std::vector<int> grayList = FindGrayList(node);
 
-	while (!qu.empty()) {
-		std::pair<int, int> pos = qu.front();
-		qu.pop();
-
-		if (visited[pos.first][pos.second] == 0)
-			continue;
-
-		for (int i = mDim; i >= 0; --i)
-		{
-			for (int j = 0; j <= i; ++j)
-			{
-				int lenX = j;
-				int lenY = i - j;
-				// std::cout << "[" << pos.first << "," << pos.second << "]: " << i << ", " << lenY << "," << lenX << std::endl;
-				std::pair<bool, int> ret0 = CheckBox(visited, pos.first, pos.second, lenY, lenX, 0);
-				std::pair<bool, int> ret1 = CheckBox(visited, pos.first, pos.second, lenY, lenX, 1);
-				std::pair<bool, int> ret2 = CheckBox(visited, pos.first, pos.second, lenY, lenX, 2);
-				std::pair<bool, int> ret3 = CheckBox(visited, pos.first, pos.second, lenY, lenX, 3);
-
-				// std::cout << ret0.first << " " << ret1.first << " " << ret2.first << " " << ret3.first << " " << std::endl;
-				// std::cout << ret0.second << " " << ret1.second << " " << ret2.second << " " << ret3.second << " " << std::endl;
-				int flag = 5;
-				int maxValue = 0;
-				if (ret3.first && maxValue <= ret3.second)
+				int cnt = 0;
+				bool flag = true;
+				for (int k = 0; k < grayList.size(); ++k)
 				{
-					flag = 3;
-					maxValue = ret3.second;
-				}
-				if (ret2.first && maxValue <= ret2.second)
-				{
-					flag = 2;
-					maxValue = ret2.second;
-				}
-				if (ret1.first && maxValue <= ret1.second)
-				{
-					flag = 1;
-					maxValue = ret1.second;
-				}
-				if (ret0.first && maxValue <= ret0.second)
-				{
-					flag = 0;
-					maxValue = ret0.second;
+					int num = GrayDecode(grayList[k]);
+					int x = num % mMaxX;
+					int y = num / mMaxX;
+
+					if (mMap[y][x] == 0)
+					{
+						flag = false;
+						break;
+					}
+					if (visited[y][x] != 0)
+					{
+						++cnt;
+					}
 				}
 
-				if (maxValue > 0) {
-					// std::cout << ret0.second << " " << ret1.second << " " << ret2.second << " " << ret3.second << " " << std::endl;
-					UpdateVisited(visited, pos.first, pos.second, lenY, lenX, flag);
-				}
-
-				if (flag != 5 && maxValue > 0)
+				if (flag && cnt > 0)
 				{
-					mKarMap.push_back({ pos.first, pos.second, lenY, lenX, flag });
+					mKarMap.push_back(node);
+					for (int k = 0; k < grayList.size(); ++k)
+					{
+						int num = GrayDecode(grayList[k]);
+						int x = num % mMaxX;
+						int y = num / mMaxX;
+						visited[y][x] = 0;
+						mKarMapGUI[y][x] = mKarMap.size();
+					}
 				}
-			}
-		}
-	}
-}
-
-void KMap::FindkarnaughMapGUI()
-{
-	for (int pos = 0; pos < mKarMap.size(); ++pos) {
-		int posY = mKarMap[pos][0];
-		int posX = mKarMap[pos][1];
-		int lenY = mKarMap[pos][2];
-		int lenX = mKarMap[pos][3];
-		int dir = mKarMap[pos][4];
-		for (int i = 0; i < (1 << lenY); ++i)
-		{
-			int y = posY + i * dirY[dir] + mMaxY;
-			y %= mMaxY;
-			for (int j = 0; j < (1 << lenX); ++j)
-			{
-				int x = posX + j * dirX[dir] + mMaxX;
-				x %= mMaxX;
-				mKarMapGUI[y][x] += pos;
-			}
+			} while (std::next_permutation(v.begin(), v.end()));
 		}
 	}
 }
@@ -322,6 +290,27 @@ void KMap::PrintKMap() const
 	}
 }
 
+void KMap::PrintKarnaughMapNode() const
+{
+	for (int i = 0; i < mKarMap.size(); ++i)
+	{
+		for (int j = 0; j < mKarMap[i].size(); ++j)
+		{
+			if (mKarMap[i][j] == 2)
+				continue;
+			if (mKarMap[i][j] == 0)
+				std::cout << "!";
+			std::cout << mPrefix << j << mSuffix;
+			/*if (j != mKarMap[i].size() - 1)
+				std::cout << " & ";*/
+		}
+		if (i != mKarMap.size() - 1)
+			std::cout << " + ";
+		std::cout << std::endl;
+	}
+	
+}
+
 void KMap::PrintKarnaughMap() const
 {
 	int a = mKarMap.size();
@@ -330,7 +319,7 @@ void KMap::PrintKarnaughMap() const
 		a /= 10;
 		++size;
 	}
-		
+
 	for (int y = 0; y < mMaxY; ++y)
 	{
 		for (int x = 0; x < mMaxX; ++x)

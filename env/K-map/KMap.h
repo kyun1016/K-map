@@ -3,7 +3,7 @@
 #include <iostream>
 #include <algorithm>
 #include <bitset>
-#include <queue>
+#include <string>
 
 class KMap
 {
@@ -21,20 +21,21 @@ public:
 	void Init();
 
 	int GrayEncode(const int& num) const;
-	std::pair<bool, int> CheckBox(const std::vector<std::vector<int>>& visited, const int& posY, const int posX, const int& lenY, const int& lenX, const int& dir) const;
-	void UpdateVisited(std::vector<std::vector<int>>& visited, const int& posY, const int posX, const int& lenY, const int& lenX, const int& dir) const;
+	int GrayDecode(const int& num) const;
+	std::vector<int> FindGrayList(const std::vector<int>& node) const;
+	std::vector<int> FindGrayList(const std::initializer_list<int>& node) const;
 	
 	void FindXY();
 	void FindSelectList();
 	void FindMap();
-	void FindkarnaughMap();
-	void FindkarnaughMapGUI();
+	void FindKarnaughMap();
 	void PrintX() const;
 	void PrintY() const;
 	void PrintDim() const;
 	void PrintList() const;
 	void PrintMap() const;
 	void PrintKMap() const;
+	void PrintKarnaughMapNode() const;
 	void PrintKarnaughMap() const;
 	int GetDim() const;
 	std::vector<int> GetList() const;
@@ -55,5 +56,8 @@ private:
 	std::vector<std::vector<int>> mMap;
 	std::vector<std::vector<int>> mKarMap;
 	std::vector<std::vector<int>> mKarMapGUI;
+
+	std::string mPrefix = "a[";
+	std::string mSuffix = "]";
 };
 
