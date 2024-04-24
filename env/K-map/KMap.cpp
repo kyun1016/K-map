@@ -8,6 +8,7 @@ KMap::KMap()
 	, mMap(std::vector<std::vector<int>>())
 	, mKarMap(std::vector<std::vector<int>>())
 {
+	Init();
 }
 
 KMap::KMap(const int& dim)
@@ -88,6 +89,7 @@ KMap& KMap::operator=(KMap* ref)
 
 void KMap::Init()
 {
+	SetDefaultInfix();
 	FindXY();
 	FindSelectList();
 	FindMap();
@@ -167,20 +169,12 @@ void KMap::FindSelectList()
 
 void KMap::FindMap()
 {
-	for (int y = 0; y < mMaxY; ++y)
+	mMap = std::vector<std::vector<int>>(mMaxY, std::vector<int>(mMaxX, 0));
+	for (const auto& a : mSelectList)
 	{
-		for (int x = 0; x < mMaxX; ++x)
-		{
-			int num = x + y * mMaxX;
-			mMap[y][x] = 0;
-			for (const auto& a : mSelectList)
-			{
-				if (a == GrayEncode(num))
-				{
-					mMap[y][x] = 1;
-				}
-			}
-		}
+		int y = GrayDecode(a / mMaxX);
+		int x = GrayDecode(a % mMaxX);
+		mMap[y][x] = 1;
 	}
 }
 
@@ -191,8 +185,20 @@ void KMap::FindKarnaughMap()
 
 	for (int i = 0; i <= mDim; i++)
 	{
+		// part 1. check visited
+		bool exit = true;
+		for (auto& a : visited)
+			for (auto& b : a)
+				if (!b)
+					exit = false;
+		if (exit)
+			break;
+
+		// part 2. make node
 		std::vector<bool> v(mDim - i, false);
 		v.insert(v.end(), i, true);
+		std::vector<std::vector<int>> nodeList;
+		std::vector<std::vector<int>> grayList;
 		for (int j = 0; j < (1 << i); ++j)
 		{
 			do {
@@ -203,41 +209,53 @@ void KMap::FindKarnaughMap()
 					else
 						node[k] = 2;
 				}
+				nodeList.push_back(node);
+				grayList.push_back(FindGrayList(node));
+			} while (std::next_permutation(v.begin(), v.end()));
+		}
 
-				std::vector<int> grayList = FindGrayList(node);
+		// part 3. check node
+		while (true)
+		{
+			int maxCnt = 0;
+			int maxOrder = 0;
 
+			for (int j = 0; j < grayList.size(); ++j)
+			{
 				int cnt = 0;
-				bool flag = true;
-				for (int k = 0; k < grayList.size(); ++k)
+				for (int k = 0; k < grayList[j].size(); ++k)
 				{
-					int num = GrayDecode(grayList[k]);
-					int x = num % mMaxX;
-					int y = num / mMaxX;
+					int y = GrayDecode(grayList[j][k] / mMaxX);
+					int x = GrayDecode(grayList[j][k] % mMaxX);
 
 					if (mMap[y][x] == 0)
 					{
-						flag = false;
+						cnt = 0;
 						break;
 					}
-					if (visited[y][x] != 0)
+					if (visited[y][x] > 0)
 					{
 						++cnt;
 					}
 				}
-
-				if (flag && cnt > 0)
+				if (cnt > maxCnt)
 				{
-					mKarMap.push_back(node);
-					for (int k = 0; k < grayList.size(); ++k)
-					{
-						int num = GrayDecode(grayList[k]);
-						int x = num % mMaxX;
-						int y = num / mMaxX;
-						visited[y][x] = 0;
-						mKarMapGUI[y][x] = mKarMap.size();
-					}
+					maxCnt = cnt;
+					maxOrder = j;
 				}
-			} while (std::next_permutation(v.begin(), v.end()));
+			}
+			if (maxCnt == 0)
+				break;
+
+			mKarMap.push_back(nodeList[maxOrder]);
+			for (int j = 0; j < grayList[maxOrder].size(); ++j)
+			{
+				int y = GrayDecode(grayList[maxOrder][j] / mMaxX);
+				int x = GrayDecode(grayList[maxOrder][j] % mMaxX);
+
+				visited[y][x] = 0;
+				mKarMapGUI[y][x] = mKarMap.size();
+			}
 		}
 	}
 }
@@ -300,15 +318,13 @@ void KMap::PrintKarnaughMapNode() const
 				continue;
 			if (mKarMap[i][j] == 0)
 				std::cout << "!";
-			std::cout << mPrefix << j << mSuffix;
-			/*if (j != mKarMap[i].size() - 1)
-				std::cout << " & ";*/
+			std::cout << mPrefix << mInfix[j] << mSuffix;
 		}
 		if (i != mKarMap.size() - 1)
 			std::cout << " + ";
 		std::cout << std::endl;
 	}
-	
+
 }
 
 void KMap::PrintKarnaughMap() const
@@ -330,8 +346,6 @@ void KMap::PrintKarnaughMap() const
 		std::cout << std::endl;
 	}
 }
-
-
 
 int KMap::GetDim() const
 {
@@ -369,4 +383,43 @@ void KMap::SetList(const std::initializer_list<int>& list)
 {
 	mSelectList = list;
 	Init();
+}
+
+void KMap::SetDefaultInfix()
+{
+	mInfix = std::vector<std::string>(mDim);
+	for (int i = 0; i < mInfix.size(); ++i)
+	{
+		mInfix[i] = std::to_string(i);
+	}
+}
+
+void KMap::SetPrefix(const std::string& prefix)
+{
+	mPrefix = prefix;
+}
+
+void KMap::SetInfix(const std::vector<std::string>& infix)
+{
+	assert(infix.size() != mDim, "*Error : KMap.SetInfix function");
+	if (infix.size() != mDim)
+	{
+		std::cout << "*Error : KMap.SetInfix function" << std::endl;
+	}
+
+	mInfix = std::vector<std::string>(mDim);
+	for (int i = 0; i < infix.size(); ++i)
+	{
+		mInfix[i] = infix[i];
+	}
+}
+
+void KMap::SetInfix(const std::initializer_list<std::string>& infix)
+{
+	SetInfix(std::vector<std::string>(infix));
+}
+
+void KMap::SetSuffix(const std::string& suffix)
+{
+	mSuffix = suffix;
 }

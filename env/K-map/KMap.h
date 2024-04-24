@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <bitset>
 #include <string>
+#include <cassert>
 
 class KMap
 {
@@ -45,6 +46,11 @@ public:
 	void SetDim(const int& dim);
 	void SetList(const std::vector<int>& list);
 	void SetList(const std::initializer_list<int>& list);
+	void SetDefaultInfix();
+	void SetPrefix(const std::string& prefix);
+	void SetInfix(const std::vector<std::string>& infix);
+	void SetInfix(const std::initializer_list<std::string>& infix);
+	void SetSuffix(const std::string& suffix);
 
 private:
 	const int dirX[4] = { 1, 1, -1, -1 };
@@ -58,6 +64,7 @@ private:
 	std::vector<std::vector<int>> mKarMapGUI;
 
 	std::string mPrefix = "a[";
+	std::vector<std::string> mInfix;
 	std::string mSuffix = "]";
 };
 
