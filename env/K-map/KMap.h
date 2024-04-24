@@ -30,6 +30,7 @@ public:
 	void FindSelectList();
 	void FindMap();
 	void FindKarnaughMap();
+
 	void PrintX() const;
 	void PrintY() const;
 	void PrintDim() const;
@@ -38,6 +39,7 @@ public:
 	void PrintKMap() const;
 	void PrintKarnaughMapNode() const;
 	void PrintKarnaughMap() const;
+
 	int GetDim() const;
 	std::vector<int> GetList() const;
 	std::vector<std::vector<int>> GetMap() const;
